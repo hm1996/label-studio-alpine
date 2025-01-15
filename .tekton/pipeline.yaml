@@ -62,6 +62,8 @@ spec:
       taskRef:
         name: docker-build
     - name: grype-check
+      runAfter:
+        - docker-build
       params:
         - name: ARGS
           value: 

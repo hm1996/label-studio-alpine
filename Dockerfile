@@ -15,6 +15,7 @@ ARG BRANCH_OVERRIDE
 # 4. "py-version-generator" - Generates version files for python sources.
 # 5. "prod" - Creates the final production image with the Label Studio, Nginx, and other dependencies.
 
+
 ################################ Stage: frontend-builder (build frontend assets)
 FROM --platform=${BUILDPLATFORM} node:${NODE_VERSION} AS frontend-builder
 ENV BUILD_NO_SERVER=true \

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=18
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.11
 ARG POETRY_VERSION=1.8.4
 ARG VERSION_OVERRIDE
 ARG BRANCH_OVERRIDE
@@ -125,6 +125,7 @@ WORKDIR $LS_DIR
 # Install basic dependencies
 RUN --mount=type=cache,target="/var/cache/apk",sharing=locked \
     set -eux; \
+    pip3 uninstall -y setuptools; \
     apk update; \
     apk upgrade; \
     apk add --no-cache gnupg curl nginx bash

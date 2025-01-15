@@ -1,0 +1,71 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: labelstudio-pipeline
+spec:
+  workspaces:
+    - name: shared-repository
+      description: | 
+        This workspace contains the cloned repo files, so they can be read by the
+        next task.
+    - name: git-credentials
+      description: SSH credentials from secret
+  params:
+    - name: NODE_VERSION
+      type: string
+      default: "18"
+    - name: PYTHON_VERSION
+      type: string
+      default: "3.11"
+    - name: POETRY_VERSION
+      type: string
+      default: "1.8.4"
+    - name: VERSION_OVERRIDE
+      type: string
+      default: ""
+    - name: BRANCH_OVERRIDE
+      type: string
+      default: ""
+    - name: GITHUB_REPO_URL
+      type: string
+      default: ""
+    - name: SOURCE_REVISION
+      type: string
+      default: develop
+  tasks:
+    - name: clone-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-repository
+        - name: ssh-directory
+          workspace: git-credentials
+      params:
+        - name: url
+          value: $(params.GITHUB_REPO_URL)
+        - name: revision
+          value: $(params.SOURCE_REVISION)
+    - name: docker-build
+      runAfter: 
+        - clone-repository
+      workspaces:
+        - name: source
+          workspace: shared-repository
+      params:
+        - name: image
+          value: registry.kube-system.svc.cluster.local/labelstudio-alpine
+        - name: build_extra_args
+          value: --target production --build-arg VERSION_OVERRIDE=1.15.0
+        - name: insecure_registry
+          value: registry.kube-system.svc.cluster.local
+      taskRef:
+        name: docker-build
+    - name: grype-check
+      params:
+        - name: ARGS
+          value: 
+            - registry.kube-system.svc.cluster.local/labelstudio-alpine
+      taskRef:
+        name: grype
+        

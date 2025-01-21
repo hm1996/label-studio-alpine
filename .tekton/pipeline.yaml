@@ -62,40 +62,40 @@ spec:
           value: $(params.GITHUB_REPO_URL)
         - name: revision
           value: $(params.SOURCE_REVISION)
-    - name: docker-build-web
-      taskRef:
-          name: buildah
-      runAfter:
-        - repository-clone
-      workspaces:
-        - name: source
-          workspace: shared-repository
-      params:
-        - name: IMAGE
-          value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
-        - name: FORMAT
-          value: docker
-        - name: BUILD_EXTRA_ARGS
-          value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
-        - name: DOCKERFILE
-          value: ./Dockerfile.web
     - name: docker-build-app
       taskRef:
-          name: buildah
+          name: docker-build
       runAfter:
         - repository-clone
       workspaces:
         - name: source
           workspace: shared-repository
       params:
-        - name: IMAGE
+        - name: image
           value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
-        - name: FORMAT
-          value: docker
-        - name: BUILD_EXTRA_ARGS
+        - name: build_extra_args
           value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
-        - name: DOCKERFILE
-          value: ./Dockerfile.app
+        - name: dockerfile
+          value: ./Dockerfile.web
+        - name: insecure_registry
+          value: registry.kube-system.svc.cluster.local
+    - name: docker-build-web
+      taskRef:
+          name: docker-build
+      runAfter:
+        - repository-clone
+      workspaces:
+        - name: source
+          workspace: shared-repository
+      params:
+        - name: image
+          value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
+        - name: build_extra_args
+          value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
+        - name: dockerfile
+          value: ./Dockerfile.web
+        - name: insecure_registry
+          value: registry.kube-system.svc.cluster.local
     - name: grype-check-app
       taskRef:
         name: grype

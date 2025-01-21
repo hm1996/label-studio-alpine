@@ -135,7 +135,7 @@ spec:
         - name: url
           value: https://github.com/hm1996/labelstudio-helm-chart.git
         - name: revision
-          value: feature/nginx-app- # TODO: This is temporal
+          value: feature/nginx-app-pods # TODO: This is temporal
     - name: helm-release
       runAfter:
         - helm-repository-clone
@@ -150,7 +150,7 @@ spec:
         - name: release_namespace
           value: label-studio-test
         - name: overwrite_values
-          value: "global.image.repository=10.101.123.76:80/label-studio, global.image.tag=1.15.0-alpine"
+          value: "global.image.repository=10.101.123.76:80/label-studio,global.image.tag=1.15.0-alpine"
       taskSpec:
         params:
           - name: charts_dir

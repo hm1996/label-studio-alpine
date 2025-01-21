@@ -122,4 +122,37 @@ spec:
           value: 
             - $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
             - -f high
-    
+    - name: helm-repository-clone
+      taskRef:
+        name: git-clone
+      runAfter:
+        - grype-check-app
+        - grype-check-web
+      workspaces:
+        - name: output
+          workspace: helm-shared-repository
+        - name: ssh-directory
+          workspace: git-credentials
+      params:
+        - name: url
+          value: https://github.com/hm1996/labelstudio-helm-chart.git
+        - name: revision
+          value: feature/nginx-app-pods
+    - name: helm-release
+      taskRef:
+        name: helm-upgrade-from-source
+      runAfter:
+        - helm-repository-clone
+      workspaces:
+      - name: source
+        workspace: helm-shared-repository
+      params:
+      - name: charts_dir
+        value: ./heartex/label-studio
+      - name: release_name
+        value: label-studio-test
+      - name: release-namespace
+        value: label-studio-test
+      - name: overwrite_values
+        value: "global.image.repository=registry.kube-system.svc.cluster.local/label-studio, global.image.tag=1.15.0-alpine"
+        

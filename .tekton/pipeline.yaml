@@ -125,6 +125,9 @@ spec:
     - name: helm-repository-clone
       taskRef:
         name: git-clone
+      runAfter:
+        - grype-check-app
+        - grype-check-web
       workspaces:
         - name: output
           workspace: helm-shared-repository

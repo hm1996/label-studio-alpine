@@ -75,11 +75,8 @@ spec:
           value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
         - name: FORMAT
           value: docker
-        - name: BUILD_ARGS
-          value: 
-            - VERSION_OVERRIDE=$(params.VERSION)
         - name: BUILD_EXTRA_ARGS
-          value: --target production
+          value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
         - name: DOCKERFILE
           value: ./Dockerfile.web
     - name: docker-build-app
@@ -95,11 +92,8 @@ spec:
           value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
         - name: FORMAT
           value: docker
-        - name: BUILD_ARGS
-          value: 
-            - VERSION_OVERRIDE=$(params.VERSION)
         - name: BUILD_EXTRA_ARGS
-          value: --target production
+          value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
         - name: DOCKERFILE
           value: ./Dockerfile.app
     - name: grype-check-app

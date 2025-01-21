@@ -47,7 +47,7 @@ spec:
       default: label-studio-app
     - name: VERSION
       type: string
-      default: "1.15.0"
+      default: "1.15.0" # TODO: Find a way to do this dynamic
   tasks:
     - name: repository-clone
       taskRef:
@@ -135,22 +135,101 @@ spec:
         - name: url
           value: https://github.com/hm1996/labelstudio-helm-chart.git
         - name: revision
-          value: feature/nginx-app-pods
+          value: feature/nginx-app- # TODO: This is temporal
     - name: helm-release
-      taskRef:
-        name: helm-upgrade-from-source
       runAfter:
         - helm-repository-clone
       workspaces:
-      - name: source
-        workspace: helm-shared-repository
+        - name: source
+          workspace: helm-shared-repository
       params:
-      - name: charts_dir
-        value: ./heartex/label-studio
-      - name: release_name
-        value: label-studio-test
-      - name: release-namespace
-        value: label-studio-test
-      - name: overwrite_values
-        value: "global.image.repository=registry.kube-system.svc.cluster.local/label-studio, global.image.tag=1.15.0-alpine"
+        - name: charts_dir
+          value: ./heartex/label-studio
+        - name: release_name
+          value: label-studio-test
+        - name: release_namespace
+          value: label-studio-test
+        - name: overwrite_values
+          value: "global.image.repository=10.101.123.76:80/label-studio, global.image.tag=1.15.0-alpine"
+      taskSpec:
+        params:
+          - name: charts_dir
+            description: The directory in source that contains the helm chart
+          - name: release_name
+            description: The helm release name
+            default: "helm-release"
+          - name: release_namespace
+            description: The helm release namespace
+            default: ""
+          - name: overwrite_values
+            description: "Specify the values you want to overwrite, comma separated: autoscaling.enabled=true,replicas=1"
+            default: ""
+          - name: helm_image
+            description: "helm image to be used"
+            default: "docker.io/lachlanevenson/k8s-helm@sha256:0a068ae407e21d1836c6a89a1e9e81af1e55fa56890998e33d5caabdbb51e77b" # tag: v3.10.2
+        workspaces:
+          - name: source
+        steps:
+          - name: upgrade
+            image: $(params.helm_image)
+            workingDir: /workspace/source
+            script: |
+              helm repo add redis https://charts.bitnami.com/bitnami
+              helm repo add postgresql https://charts.bitnami.com/bitnami
+
+              cd $(params.charts_dir)
+              helm dependency build
+              cd -
+
+              echo 'installing helm chart...'
+              helm upgrade --install --wait --timeout 60m --namespace "$(params.release_namespace)" --create-namespace "$(params.release_name)" "$(params.charts_dir)" --debug --set "$(params.overwrite_values)"
+    - name: regression-tests
+      runAfter:
+        - helm-release
+      params:
+        - name: LABEL_STUDIO_URL
+          value: http://label-studio-test-ls-web.label-studio-test.svc.cluster.local
+        - name: HELM_RELEASE
+          value: label-studio-test
+        - name: HELM_RELEASE_NAMESPACE
+          value: label-studio-test
+        - name: LABEL_STUDIO_APP_NAME
+          value: ls-app
+        - name: KUBE_CONFIG_PATH
+          value: ''
+        - name: MINIO_URL
+          value: minio-1737413701.minio.svc.cluster.local:9000
+        - name: MINIO_EXTERNAL_URL
+          value: minio-1737413701.minio.svc.cluster.local:9000
+        - name: MINIO_BUCKET
+          value: label-studio-test
+        - name: MINIO_KEY_ID
+          value: yPHcPxXxbruCjhQNM9O7
+        - name: MINIO_SECRET_KEY
+          value: miYc42jQTCc7Sdk540yYLDm9uJdwl3ks8y4cE9Lt
+      taskSpec:
+        params:
+          - name: LABEL_STUDIO_URL
+            default: http://localhost:8085
+          - name: HELM_RELEASE
+            default: label-studio
+          - name: HELM_RELEASE_NAMESPACE
+            default: default
+          - name: LABEL_STUDIO_APP_NAME
+            default: ls-app
+          - name: KUBE_CONFIG_PATH
+            default: ''
+          - name: MINIO_URL
+            default: ''
+          - name: MINIO_EXTERNAL_URL
+            default: ''
+          - name: MINIO_BUCKET
+            default: ''
+          - name: MINIO_KEY_ID
+            default: ''
+          - name: MINIO_SECRET_KEY
+            default: ''
+        steps:
+          - name: regression-tests
+            image: 10.104.100.9:80/label-studio-test:latest
         

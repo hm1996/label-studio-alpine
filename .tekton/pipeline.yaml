@@ -96,8 +96,7 @@ spec:
           value: 
             - VERSION_OVERRIDE=$(params.VERSION)
         - name: BUILD_EXTRA_ARGS
-          value: 
-            - --target production
+          value: --target production
         - name: DOCKERFILE
           value: ./Dockerfile.web
     - name: grype-check-app

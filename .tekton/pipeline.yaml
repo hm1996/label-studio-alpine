@@ -38,7 +38,7 @@ spec:
       default: develop
     - name: REGISTRY_URL
       type: string
-      default: registry.kube-system.svc.cluster.local
+      default: registry.kube-system.svc.cluster.local:80
     - name: WEB_IMAGE_NAME
       type: string
       default: label-studio-web
@@ -78,7 +78,7 @@ spec:
         - name: dockerfile
           value: ./Dockerfile.app
         - name: insecure_registry
-          value: registry.kube-system.svc.cluster.local
+          value: $(params.REGISTRY_URL)
     - name: docker-build-web
       taskRef:
           name: docker-build
@@ -95,7 +95,7 @@ spec:
         - name: dockerfile
           value: ./Dockerfile.web
         - name: insecure_registry
-          value: registry.kube-system.svc.cluster.local
+          value: $(params.REGISTRY_URL)
     - name: grype-check-app
       taskRef:
         name: grype

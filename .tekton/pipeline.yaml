@@ -8,6 +8,10 @@ spec:
       description: | 
         This workspace contains the cloned repo files, so they can be read by the
         next task.
+    - name: helm-shared-repository
+      description: | 
+        This workspace contains the cloned repo files, so they can be read by the
+        next task.
     - name: git-credentials
       description: SSH credentials from secret
   params:
@@ -135,8 +139,7 @@ spec:
       taskRef:
         name: helm-upgrade-from-source
       runAfter:
-        - grype-check-web
-        - grype-check-app
+        - helm-repository-clone
       workspaces:
       - name: source
         workspace: helm-shared-repository

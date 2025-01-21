@@ -132,7 +132,7 @@ spec:
           workspace: git-credentials
       params:
         - name: url
-          value: $(params.GITHUB_REPO_URL)
+          value: https://github.com/hm1996/labelstudio-helm-chart.git
         - name: revision
           value: feature/nginx-app-pods
     - name: helm-release

@@ -76,7 +76,7 @@ spec:
         - name: build_extra_args
           value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
         - name: dockerfile
-          value: ./Dockerfile.web
+          value: ./Dockerfile.app
         - name: insecure_registry
           value: registry.kube-system.svc.cluster.local
     - name: docker-build-web

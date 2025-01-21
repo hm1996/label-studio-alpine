@@ -105,7 +105,7 @@ spec:
         - name: ARGS
           value: 
             - $(params.REGISTRY_URL)/$(params.APP_IMAGE_NAME):$(params.VERSION)-alpine
-            - -f high
+            - --fail-on=high
     - name: grype-check-web
       taskRef:
         name: grype
@@ -115,7 +115,7 @@ spec:
         - name: ARGS
           value: 
             - $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
-            - -f high
+            - --fail-on=high
     - name: helm-repository-clone
       taskRef:
         name: git-clone

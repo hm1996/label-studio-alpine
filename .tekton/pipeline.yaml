@@ -32,8 +32,20 @@ spec:
     - name: SOURCE_REVISION
       type: string
       default: develop
+    - name: REGISTRY_URL
+      type: string
+      default: registry.kube-system.svc.cluster.local
+    - name: WEB_IMAGE_NAME
+      type: string
+      default: label-studio-web
+    - name: APP_IMAGE_NAME
+      type: string
+      default: label-studio-app
+    - name: VERSION
+      type: string
+      default: "1.15.0"
   tasks:
-    - name: clone-repository
+    - name: repository-clone
       taskRef:
         name: git-clone
       workspaces:
@@ -46,29 +58,97 @@ spec:
           value: $(params.GITHUB_REPO_URL)
         - name: revision
           value: $(params.SOURCE_REVISION)
-    - name: docker-build
-      runAfter: 
-        - clone-repository
+    - name: docker-build-web
+      taskRef:
+          name: buildah
+      runAfter:
+        - repository-clone
       workspaces:
         - name: source
           workspace: shared-repository
       params:
-        - name: image
-          value: registry.kube-system.svc.cluster.local/labelstudio-alpine
-        - name: build_extra_args
-          value: --target production --build-arg VERSION_OVERRIDE=1.15.0
-        - name: insecure_registry
-          value: registry.kube-system.svc.cluster.local
+        - name: IMAGE
+          value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
+        - name: FORMAT
+          value: docker
+        - name: BUILD_ARGS
+          value: 
+            - VERSION_OVERRIDE=$(params.VERSION)
+        - name: BUILD_EXTRA_ARGS
+          value: 
+            - --target production
+        - name: DOCKERFILE
+          value: ./Dockerfile.web
+    - name: docker-build-app
       taskRef:
-        name: docker-build
-    - name: grype-check
+          name: buildah
       runAfter:
-        - docker-build
+        - repository-clone
+      workspaces:
+        - name: source
+          workspace: shared-repository
+      params:
+        - name: IMAGE
+          value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
+        - name: FORMAT
+          value: docker
+        - name: BUILD_ARGS
+          value: 
+            - VERSION_OVERRIDE=$(params.VERSION)
+        - name: BUILD_EXTRA_ARGS
+          value: 
+            - --target production
+        - name: DOCKERFILE
+          value: ./Dockerfile.web
+    - name: grype-check-app
+      taskRef:
+        name: grype
+      runAfter:
+        - docker-build-app
       params:
         - name: ARGS
           value: 
-            - registry.kube-system.svc.cluster.local/labelstudio-alpine
+            - $(params.REGISTRY_URL)/$(params.APP_IMAGE_NAME):$(params.VERSION)-alpine
             - -f high
+    - name: grype-check-web
       taskRef:
         name: grype
+      runAfter:
+        - docker-build-web
+      params:
+        - name: ARGS
+          value: 
+            - $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
+            - -f high
+    - name: helm-repository-clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: helm-shared-repository
+        - name: ssh-directory
+          workspace: git-credentials
+      params:
+        - name: url
+          value: $(params.GITHUB_REPO_URL)
+        - name: revision
+          value: feature/nginx-app-pods
+    - name: helm-release
+      taskRef:
+        name: helm-upgrade-from-source
+      runAfter:
+        - grype-check-web
+        - grype-check-app
+      workspaces:
+      - name: source
+        workspace: helm-shared-repository
+      params:
+      - name: charts_dir
+        value: ./heartex/label-studio
+      - name: release_name
+        value: label-studio-test
+      - name: release-namespace
+        value: label-studio-test
+      - name: overwrite_values
+        value: "global.image.repository=registry.kube-system.svc.cluster.local/label-studio, global.image.tag=1.15.0-alpine"
         

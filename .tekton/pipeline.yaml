@@ -101,7 +101,7 @@ spec:
         - name: BUILD_EXTRA_ARGS
           value: --target production
         - name: DOCKERFILE
-          value: ./Dockerfile.web
+          value: ./Dockerfile.app
     - name: grype-check-app
       taskRef:
         name: grype

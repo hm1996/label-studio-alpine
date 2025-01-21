@@ -55,6 +55,8 @@ FROM venv-builder AS py-version-generator
 ARG VERSION_OVERRIDE
 ARG BRANCH_OVERRIDE
 
+RUN git config --global --add safe.directory /label-studio
+
 # Create version_.py and ls-version_.py
 RUN --mount=type=bind,source=.git,target=./.git \
     VERSION_OVERRIDE=${VERSION_OVERRIDE} BRANCH_OVERRIDE=${BRANCH_OVERRIDE} poetry run python label_studio/core/version.py

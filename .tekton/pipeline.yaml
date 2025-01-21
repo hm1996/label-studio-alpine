@@ -72,7 +72,7 @@ spec:
           workspace: shared-repository
       params:
         - name: image
-          value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
+          value: $(params.REGISTRY_URL)/$(params.APP_IMAGE_NAME):$(params.VERSION)-alpine
         - name: build_extra_args
           value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
         - name: dockerfile

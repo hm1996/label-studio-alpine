@@ -36,6 +36,8 @@ FROM frontend-builder AS frontend-version-generator
 ENV LS_DIR=/label-studio \
     HOME=/label-studio
 
+RUN git config --global --add safe.directory /label-studio
+
 RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=locked \
     --mount=type=cache,target=${NX_CACHE_DIRECTORY},sharing=locked \
     --mount=type=bind,source=.git,target=../.git \

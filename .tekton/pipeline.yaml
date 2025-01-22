@@ -49,6 +49,141 @@ spec:
       type: string
       default: "1.15.0" # TODO: Find a way to do this dynamic
   tasks:
+    - name: repository-clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-repository
+        - name: ssh-directory
+          workspace: git-credentials
+      params:
+        - name: url
+          value: $(params.GITHUB_REPO_URL)
+        - name: revision
+          value: $(params.SOURCE_REVISION)
+    - name: docker-build-app
+      taskRef:
+          name: docker-build
+      runAfter:
+        - repository-clone
+      workspaces:
+        - name: source
+          workspace: shared-repository
+      params:
+        - name: image
+          value: $(params.REGISTRY_URL)/$(params.APP_IMAGE_NAME):$(params.VERSION)-alpine
+        - name: build_extra_args
+          value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
+        - name: dockerfile
+          value: ./Dockerfile.app
+        - name: insecure_registry
+          value: $(params.REGISTRY_URL)
+    - name: docker-build-web
+      taskRef:
+          name: docker-build
+      runAfter:
+        - repository-clone
+      workspaces:
+        - name: source
+          workspace: shared-repository
+      params:
+        - name: image
+          value: $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
+        - name: build_extra_args
+          value: --target production --build-arg VERSION_OVERRIDE=$(params.VERSION)
+        - name: dockerfile
+          value: ./Dockerfile.web
+        - name: insecure_registry
+          value: $(params.REGISTRY_URL)
+    - name: grype-check-app
+      taskRef:
+        name: grype
+      runAfter:
+        - docker-build-app
+      params:
+        - name: GRYPE_IMAGE
+          value: anchore/grype:latest
+        - name: ARGS
+          value: 
+            - $(params.REGISTRY_URL)/$(params.APP_IMAGE_NAME):$(params.VERSION)-alpine
+            - --fail-on=high
+    - name: grype-check-web
+      taskRef:
+        name: grype
+      runAfter:
+        - docker-build-web
+      params:
+        - name: GRYPE_IMAGE
+          value: anchore/grype:latest
+        - name: ARGS
+          value: 
+            - $(params.REGISTRY_URL)/$(params.WEB_IMAGE_NAME):$(params.VERSION)-alpine
+            - --fail-on=high
+    - name: helm-repository-clone
+      taskRef:
+        name: git-clone
+      runAfter:
+        - grype-check-app
+        - grype-check-web
+      workspaces:
+        - name: output
+          workspace: helm-shared-repository
+        - name: ssh-directory
+          workspace: git-credentials
+      params:
+        - name: url
+          value: https://github.com/hm1996/labelstudio-helm-chart.git
+        - name: revision
+          value: feature/nginx-app-pods # TODO: This is temporal
+    - name: helm-release
+      runAfter:
+        - helm-repository-clone
+      workspaces:
+        - name: source
+          workspace: helm-shared-repository
+      params:
+        - name: charts_dir
+          value: ./heartex/label-studio
+        - name: release_name
+          value: label-studio-test
+        - name: release_namespace
+          value: label-studio-test
+        - name: overwrite_values
+          value: "global.image.repository=10.101.123.76:80/label-studio,global.image.tag=1.15.0-alpine"
+      taskSpec:
+        params:
+          - name: charts_dir
+            description: The directory in source that contains the helm chart
+          - name: release_name
+            description: The helm release name
+            default: "helm-release"
+          - name: release_namespace
+            description: The helm release namespace
+            default: ""
+          - name: overwrite_values
+            description: "Specify the values you want to overwrite, comma separated: autoscaling.enabled=true,replicas=1"
+            default: ""
+          - name: helm_image
+            description: "helm image to be used"
+            default: "docker.io/lachlanevenson/k8s-helm@sha256:0a068ae407e21d1836c6a89a1e9e81af1e55fa56890998e33d5caabdbb51e77b" # tag: v3.10.2
+        workspaces:
+          - name: source
+        steps:
+          - name: upgrade
+            image: $(params.helm_image)
+            workingDir: /workspace/source
+            script: |
+              helm repo add redis https://charts.bitnami.com/bitnami
+              helm repo add postgresql https://charts.bitnami.com/bitnami
+
+              cd $(params.charts_dir)
+              helm dependency build
+              cd -
+
+              echo 'installing helm chart...'
+              helm upgrade --install --wait --timeout 60m --namespace "$(params.release_namespace)" --create-namespace "$(params.release_name)" "$(params.charts_dir)" --debug --set "$(params.overwrite_values)"
+    
     - name: regression-tests
       params:
         - name: LABEL_STUDIO_URL
@@ -117,4 +252,3 @@ spec:
                 value: $(params.MINIO_KEY_ID)
               - name: MINIO_SECRET_KEY
                 value: $(params.MINIO_SECRET_KEY)
-        

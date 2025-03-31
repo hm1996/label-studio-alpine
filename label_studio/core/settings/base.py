@@ -428,6 +428,11 @@ CSRF_COOKIE_SECURE = bool(int(get_env('CSRF_COOKIE_SECURE', SESSION_COOKIE_SECUR
 CSRF_COOKIE_HTTPONLY = bool(int(get_env('CSRF_COOKIE_HTTPONLY', SESSION_COOKIE_SECURE)))
 CSRF_COOKIE_SAMESITE = get_env('CSRF_COOKIE_SAMESITE', 'Lax')
 
+# default value is from django docs: https://docs.djangoproject.com/en/5.1/ref/settings/#csrf-cookie-age
+# approximately 1 year
+CSRF_COOKIE_AGE = int(get_env('CSRF_COOKIE_AGE', 31449600))
+
+
 # Inactivity user sessions
 INACTIVITY_SESSION_TIMEOUT_ENABLED = bool(int(get_env('INACTIVITY_SESSION_TIMEOUT_ENABLED', True)))
 # The most time a login will last, regardless of activity
@@ -707,6 +712,24 @@ if get_env('STORAGE_TYPE') == 'gcs':
 CSRF_TRUSTED_ORIGINS = get_env('CSRF_TRUSTED_ORIGINS', [])
 if CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = CSRF_TRUSTED_ORIGINS.split(',')
+
+# Custom S3 endpoints on these domains will get detailed error reporting
+S3_TRUSTED_STORAGE_DOMAINS = get_env_list(
+    'S3_TRUSTED_STORAGE_DOMAINS',
+    [
+        'amazonaws.com',
+        'scw.cloud',
+        'yandexcloud.net',
+        'digitaloceanspaces.com',
+        'orange-business.com',
+        'computecanada.ca',
+        'cloudflarestorage.com',
+        'wasabisys.com',
+        'oracle.com',
+        'amazon.com',
+        'appdomain.cloud',
+    ],
+)
 
 REAL_HOSTNAME = os.getenv('HOSTNAME')  # we have to use getenv, because we don't use LABEL_STUDIO_ prefix
 GCS_CLOUD_STORAGE_FORCE_DEFAULT_CREDENTIALS = get_bool_env('GCS_CLOUD_STORAGE_FORCE_DEFAULT_CREDENTIALS', False)

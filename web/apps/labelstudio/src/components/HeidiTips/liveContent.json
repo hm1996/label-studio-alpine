@@ -15,7 +15,7 @@
     },
     {
       "title": "Did you know?",
-      "content": "Label Studio now has a Starter Cloud offering optimized for small teams and projects.",
+      "content": "Try Label Studio Starter Cloud, optimized for small teams and projects.",
       "link": {
         "label": "Learn more",
         "url": "https://humansignal.com/pricing/",
@@ -134,7 +134,7 @@
     },
     {
       "title": "Did you know?",
-      "content": "Label Studio now has a Starter Cloud offering optimized for small teams and projects.",
+      "content": "Try Label Studio Starter Cloud, optimized for small teams and projects.",
       "link": {
         "label": "Learn more",
         "url": "https://humansignal.com/pricing/",
@@ -167,19 +167,6 @@
         "params": {
           "experiment": "project_settings_tip",
           "treatment": "connect_ml_models_live"
-        }
-      }
-    },
-    {
-      "title": "Faster image labeling",
-      "content": "You can add a rectangle or an ellipse to your image with just two clicks, or double click to create a polygon, rectangle, or ellipse.",
-      "closable": true,
-      "link": {
-        "label": "Learn more",
-        "url": "https://labelstud.io/guide/labeling#Faster-image-labeling",
-        "params": {
-          "experiment": "project_settings_tip",
-          "treatment": "two_clicks_live"
         }
       }
     }
@@ -223,7 +210,7 @@
     },
     {
       "title": "Did you know?",
-      "description": "Label Studio now has a Starter Cloud offering optimized for small teams and projects.",
+      "description": "Try Label Studio Starter Cloud, optimized for small teams and projects.",
       "link": {
         "label": "Learn more",
         "url": "https://humansignal.com/pricing/",

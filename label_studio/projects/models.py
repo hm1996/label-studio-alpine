@@ -5,7 +5,6 @@ import logging
 from typing import Any, Mapping, Optional
 
 from annoying.fields import AutoOneToOneField
-from core.feature_flags import flag_set
 from core.label_config import (
     check_control_in_config_by_regex,
     check_toname_in_config_by_regex,
@@ -46,6 +45,7 @@ from projects.functions import (
     annotate_useful_annotation_number,
 )
 from projects.functions.utils import make_queryset_from_iterable
+from projects.signals import ProjectSignals
 from tasks.models import (
     Annotation,
     AnnotationDraft,
@@ -326,13 +326,7 @@ class Project(ProjectMixin, models.Model):
 
     @property
     def has_any_predictions(self):
-        if flag_set(
-            'fflag_perf_back_lsdv_4695_update_prediction_query_to_use_direct_project_relation',
-            user='auto',
-        ):
-            return Prediction.objects.filter(Q(project=self.id)).exists()
-        else:
-            return Prediction.objects.filter(Q(task__project=self.id)).exists()
+        return Prediction.objects.filter(Q(project=self.id)).exists()
 
     @property
     def business(self):
@@ -659,6 +653,10 @@ class Project(ProjectMixin, models.Model):
     def _label_config_has_changed(self):
         return self.label_config != self.__original_label_config
 
+    @property
+    def label_config_is_not_default(self):
+        return self.label_config != Project._meta.get_field('label_config').default
+
     def should_none_model_version(self, model_version):
         """
         Returns True if the model version provided matches the object's model version,
@@ -728,7 +726,12 @@ class Project(ProjectMixin, models.Model):
         exists = True if self.pk else False
         project_with_config_just_created = not exists and self.label_config
 
-        if self._label_config_has_changed() or project_with_config_just_created:
+        label_config_has_changed = self._label_config_has_changed()
+        logger.debug(
+            f'Label config has changed: {label_config_has_changed}, original: {self.__original_label_config}, new: {self.label_config}'
+        )
+
+        if label_config_has_changed or project_with_config_just_created:
             self.data_types = extract_data_types(self.label_config)
             self.parsed_label_config = parse_config(self.label_config)
             self.label_config_hash = hash(str(self.parsed_label_config))
@@ -740,10 +743,19 @@ class Project(ProjectMixin, models.Model):
             if update_fields is not None:
                 update_fields = {'control_weights'}.union(update_fields)
 
-        if self._label_config_has_changed():
-            self.__original_label_config = self.label_config
-
         super(Project, self).save(*args, update_fields=update_fields, **kwargs)
+
+        if label_config_has_changed:
+            # save the new label config for future comparison
+            self.__original_label_config = self.label_config
+            # if tasks are already imported, emit signal that project is configured and ready for labeling
+            if self.num_tasks > 0:
+                logger.debug(f'Sending post_label_config_and_import_tasks signal for project {self.id}')
+                ProjectSignals.post_label_config_and_import_tasks.send(sender=Project, project=self)
+            else:
+                logger.debug(
+                    f'No tasks imported for project {self.id}, skipping post_label_config_and_import_tasks signal'
+                )
 
         if not exists:
             steps = ProjectOnboardingSteps.objects.all()
@@ -914,14 +926,7 @@ class Project(ProjectMixin, models.Model):
         :param extended: Boolean, if True, returns additional information. Default is False.
         :return: Dict or list containing model versions and their count predictions.
         """
-        if flag_set(
-            'fflag_perf_back_lsdv_4695_update_prediction_query_to_use_direct_project_relation',
-            user='auto',
-        ):
-            predictions = Prediction.objects.filter(project=self)
-        else:
-            predictions = Prediction.objects.filter(task__project=self)
-        # model_versions = set(predictions.values_list('model_version', flat=True).distinct())
+        predictions = Prediction.objects.filter(project=self)
 
         if extended:
             model_versions = list(
@@ -1189,8 +1194,8 @@ class ProjectSummary(models.Model):
             self.common_data_columns = list(sorted(common_data_columns))
         else:
             self.common_data_columns = list(sorted(set(self.common_data_columns) & common_data_columns))
-        logger.debug(f'summary.all_data_columns = {self.all_data_columns}')
-        logger.debug(f'summary.common_data_columns = {self.common_data_columns}')
+        logger.info(f'update summary.all_data_columns = {self.all_data_columns} project_id={self.project_id}')
+        logger.info(f'update summary.common_data_columns = {self.common_data_columns} project_id={self.project_id}')
         self.save(update_fields=['all_data_columns', 'common_data_columns'])
 
     def remove_data_columns(self, tasks):
@@ -1213,8 +1218,8 @@ class ProjectSummary(models.Model):
                 if key in common_data_columns:
                     common_data_columns.remove(key)
             self.common_data_columns = common_data_columns
-        logger.debug(f'summary.all_data_columns = {self.all_data_columns}')
-        logger.debug(f'summary.common_data_columns = {self.common_data_columns}')
+        logger.info(f'remove summary.all_data_columns = {self.all_data_columns} project_id={self.project_id}')
+        logger.info(f'remove summary.common_data_columns = {self.common_data_columns} project_id={self.project_id}')
         self.save(
             update_fields=[
                 'all_data_columns',

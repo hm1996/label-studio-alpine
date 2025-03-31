@@ -34,6 +34,23 @@ exec_entrypoint() {
     echo >&3 "$0: No init scripts found in $1, skipping configuration"
   fi
 }
+create_env_secrets_file(){
+  SOURCE_DIR="/ebay"
+  OUTPUT_FILE=/data/secrets_file.sh"
+  if [ -d "$SOURCE_DIR" ]; then
+    for file in "$SOURCE_DIR"/*; do
+        if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            content=$(cat "$file")
+            echo "export $filename=\"$content\"" >> "$OUTPUT_FILE"
+        fi
+    done
+    export ENV_INJECT_SOURCES="/data/secrets_file.sh"
+  else
+    echo "Source dir $SOURCE_DIR wasn't found, couldn't load secrets environment variables, see fidelius secrets configuration"
+  fi
+}
+
 
 source_inject_envvars() {
   if [ -n "${ENV_INJECT_SOURCES:-}" ]; then
@@ -58,6 +75,7 @@ exec_or_wrap_n_exec() {
   fi
 }
 
+create_env_secrets_file
 source_inject_envvars
 
 if [ -f "$OPT_DIR"/config_env ]; then

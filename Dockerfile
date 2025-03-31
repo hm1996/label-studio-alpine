@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=18
 ARG PYTHON_VERSION=3.12
-ARG POETRY_VERSION=1.8.4
+ARG POETRY_VERSION=2.0.1
 ARG VERSION_OVERRIDE
 ARG BRANCH_OVERRIDE
 
@@ -52,8 +52,14 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=locked \
     yarn version:libs
 
 ################################ Stage: venv-builder (prepare the virtualenv)
-FROM python:${PYTHON_VERSION}-slim AS venv-builder
+FROM python:${PYTHON_VERSION}-alpine3.21 AS venv-builder
 ARG POETRY_VERSION
+
+RUN --mount=type=cache,target="/var/cache/apk",sharing=locked \
+    set -eux; \
+    apk update; \
+    apk add python3 py-pip git; \
+    pip 
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -69,14 +75,6 @@ ENV PYTHONUNBUFFERED=1 \
 ADD https://install.python-poetry.org /tmp/install-poetry.py
 RUN python /tmp/install-poetry.py
 
-RUN --mount=type=cache,target="/var/cache/apt",sharing=locked \
-    --mount=type=cache,target="/var/lib/apt/lists",sharing=locked \
-    set -eux; \
-    apt-get update; \
-    apt-get install --no-install-recommends -y \
-            build-essential git; \
-    apt-get autoremove -y
-
 WORKDIR /label-studio
 
 ENV VENV_PATH="/label-studio/.venv"
@@ -89,6 +87,7 @@ COPY pyproject.toml poetry.lock README.md ./
 
 # Install dependencies without dev packages
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR,sharing=locked \
+    poetry lock --regenerate; \
     poetry check --lock && poetry install --no-root --without test --extras uwsgi
 
 # Install LS
@@ -96,6 +95,7 @@ COPY label_studio label_studio
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR,sharing=locked \
     # `--extras uwsgi` is mandatory here due to poetry bug: https://github.com/python-poetry/poetry/issues/7302
     poetry install --only-root --extras uwsgi && \
+    pip install -U jinja2; \
     python3 label_studio/manage.py collectstatic --no-input
 
 ################################ Stage: py-version-generator
@@ -108,7 +108,7 @@ RUN --mount=type=bind,source=.git,target=./.git \
     VERSION_OVERRIDE=${VERSION_OVERRIDE} BRANCH_OVERRIDE=${BRANCH_OVERRIDE} poetry run python label_studio/core/version.py
 
 ################################### Stage: prod
-FROM python:${PYTHON_VERSION}-slim AS production
+FROM python:${PYTHON_VERSION}-alpine3.21 AS production
 
 ENV LS_DIR=/label-studio \
     HOME=/label-studio \
@@ -122,27 +122,21 @@ ENV LS_DIR=/label-studio \
 WORKDIR $LS_DIR
 
 # install prerequisites for app
-RUN --mount=type=cache,target="/var/cache/apt",sharing=locked \
-    --mount=type=cache,target="/var/lib/apt/lists",sharing=locked \
+# Install basic dependencies
+RUN --mount=type=cache,target="/var/cache/apk",sharing=locked \
     set -eux; \
-    apt-get update; \
-    apt-get upgrade -y; \
-    apt-get install --no-install-recommends -y libexpat1 \
-        gnupg2 curl; \
-    apt-get autoremove -y
+    pip3 uninstall -y setuptools; \
+    apk update; \
+    apk upgrade; \
+    apk add openssl curl ca-certificates; \
+    printf "%s%s%s%s\n" "@nginx " "http://nginx.org/packages/alpine/v" \
+    `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` "/main" | tee -a /etc/apk/repositories; \
+    curl -o /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub; \
+    mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/; \
+    apk add nginx@nginx; \
+    apk add --no-cache gnupg curl bash
 
-# install nginx
-RUN --mount=type=cache,target="/var/cache/apt",sharing=locked \
-    --mount=type=cache,target="/var/lib/apt/lists",sharing=locked \
-    set -eux; \
-    curl -sSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor -o /etc/apt/keyrings/nginx-archive-keyring.gpg >/dev/null; \
-    DEBIAN_VERSION=$(awk -F '=' '/^VERSION_CODENAME=/ {print $2}' /etc/os-release); \
-    printf "deb [signed-by=/etc/apt/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian ${DEBIAN_VERSION} nginx\n" > /etc/apt/sources.list.d/nginx.list; \
-    printf "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" > /etc/apt/preferences.d/99nginx; \
-    apt-get update; \
-    apt-get install --no-install-recommends -y nginx; \
-    apt-get autoremove -y
-
+# Directory setup and permissions
 RUN set -eux; \
     mkdir -p $LS_DIR $LABEL_STUDIO_BASE_DATA_DIR $OPT_DIR && \
     chown -R 1001:0 $LS_DIR $LABEL_STUDIO_BASE_DATA_DIR $OPT_DIR /var/log/nginx /etc/nginx

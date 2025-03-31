@@ -50,38 +50,14 @@ export const FF_DEV_3377 = "fflag_fix_front_dev_3377_image_regions_shift_on_resi
 // Refactoring to use separate trees for every annotation to allow real annotations in View All
 export const FF_DEV_3391 = "fflag_fix_front_dev_3391_interactive_view_all";
 
-/**
- * Addresses the memory leak issue in Taxonomy with Repeater
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix
- */
-export const FF_DEV_3617 = "fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix";
-
-/**
- * Fixing maxUsages prop of *labels on region creation.
- * @link https://app.launchdarkly.com/default/test/features/fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short
- */
-export const FF_DEV_3666 = "fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short";
-
 // Use only relative coords internally to improve performance and reduce bugs
 export const FF_DEV_3793 = "fflag_fix_front_dev_3793_relative_coords_short";
-
-/**
- * Fixing issue with overlapping taxonomy items during searching
- * @link https://app.launchdarkly.com/default/community/features/fflag_fix_front_dev_4075_taxonomy_overlap_281222_short
- */
-export const FF_DEV_4075 = "fflag_fix_front_dev_4075_taxonomy_overlap_281222_short";
 
 /**
  * Label stream ablation experiment for solving overlap issue
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short
  */
 export const FF_DEV_4174 = "fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short";
-
-/**
- * Fix logic of namespaces inside Hotkeys
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
- */
-export const FF_LSDV_1148 = "fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short";
 
 /**
  * Default Audio v3 to use multichannel mode if the track has 2 or more channels.
@@ -104,16 +80,9 @@ export const FF_LSDV_4583_6 = "fflag_feat_front_lsdv_4583_6_images_preloading_sh
  * Removing interrupting from the draft saving
  *
  * Without this flag we have a situation when changes in history leading to the empty results break functionality of adding comments and make the draft saving process indicator stay forever.
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short
  */
 export const FF_LSDV_3009 = "fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short";
-
-/**
- * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
- *
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4659_skipduplicates_060323_short
- */
-export const FF_LSDV_4659 = "fflag_feat_front_lsdv_4659_skipduplicates_060323_short";
 
 /**
  * Fixing issues related to selection tool functional (selecting hidden regions, onClick in Konva, interaction with regions inside selection area)

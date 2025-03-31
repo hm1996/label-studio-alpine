@@ -5,10 +5,8 @@ Feature("Taxonomy");
 Before(({ LabelStudio }) => {
   LabelStudio.setFeatureFlags({
     fflag_feat_front_lsdv_5451_async_taxonomy_110823_short: false,
-    fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: true,
     ff_front_dev_1536_taxonomy_user_labels_150222_long: true,
     ff_front_1170_outliner_030222_short: true,
-    fflag_fix_front_dev_4075_taxonomy_overlap_281222_short: true,
   });
 });
 

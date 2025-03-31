@@ -51,18 +51,6 @@ export const FF_DEV_3377 = "fflag_fix_front_dev_3377_image_regions_shift_on_resi
 export const FF_DEV_3391 = "fflag_fix_front_dev_3391_interactive_view_all";
 
 /**
- * Addresses the memory leak issue in Taxonomy with Repeater
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix
- */
-export const FF_DEV_3617 = "fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix";
-
-/**
- * Fixing maxUsages prop of *labels on region creation.
- * @link https://app.launchdarkly.com/default/test/features/fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short
- */
-export const FF_DEV_3666 = "fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short";
-
-/**
  * Fixing "Auto Detect" tool undo functionality and bugs with skipNextUndoState.
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_1284_auto_detect_undo_281022_short
  */
@@ -70,12 +58,6 @@ export const FF_DEV_3873 = "fflag_feat_front_dev_3873_labeling_ui_improvements_s
 
 // Use only relative coords internally to improve performance and reduce bugs
 export const FF_DEV_3793 = "fflag_fix_front_dev_3793_relative_coords_short";
-
-/**
- * Fixing issue with overlapping taxonomy items during searching
- * @link https://app.launchdarkly.com/default/community/features/fflag_fix_front_dev_4075_taxonomy_overlap_281222_short
- */
-export const FF_DEV_4075 = "fflag_fix_front_dev_4075_taxonomy_overlap_281222_short";
 
 /**
  * Label stream ablation experiment for solving overlap issue
@@ -96,12 +78,6 @@ export const FF_LSDV_E_278 = "fflag_feat_front_lsdv_e_278_contextual_scrolling_s
 export const FF_LLM_EPIC = "fflag_feat_all_lsdv_e_294_llm_annotations_180723_long";
 
 /**
- * Fix logic of namespaces inside Hotkeys
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
- */
-export const FF_LSDV_1148 = "fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short";
-
-/**
  * Multi-image segmentation support via `valueList`
  */
 export const FF_LSDV_4583 = "fflag_feat_front_lsdv_4583_multi_image_segmentation_short";
@@ -115,7 +91,7 @@ export const FF_LSDV_4583_6 = "fflag_feat_front_lsdv_4583_6_images_preloading_sh
  * Removing interrupting from the draft saving
  *
  * Without this flag we have a situation when changes in history leading to the empty results break functionality of adding comments and make the draft saving process indicator stay forever.
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short
  */
 export const FF_LSDV_3009 = "fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short";
 
@@ -124,12 +100,6 @@ export const FF_LSDV_3009 = "fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4600_lead_time_27072023_short
  */
 export const FF_LEAD_TIME = "fflag_fix_front_lsdv_4600_lead_time_27072023_short";
-
-/**
- * Adds "skipDuplicates" parameter for <TextArea /> to prevent adding duplicate entries
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4659_skipduplicates_060323_short
- */
-export const FF_LSDV_4659 = "fflag_feat_front_lsdv_4659_skipduplicates_060323_short";
 
 /**
  * Reworking of RichText to optimize its work with DOM and decrease response time with a large number of regions.
@@ -159,22 +129,6 @@ export const FF_OUTLINER_OPTIM = "fflag_feat_front_lsdv_4620_outliner_optimizati
  */
 export const FF_LSDV_4711 = "fflag_fix_all_lsdv_4711_cors_errors_accessing_task_data_short";
 
-/**
- * Preventing creating duplicates in TextArea results with "skipDuplicates" parameter during editing.
- * It also prevent creating new history steps on every change during editing textarea results.
- *
- * @see FF_LSDV_4659: To enable `skipDuplicates` parameter
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short
- */
-export const FF_LSDV_4712 = "fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short";
-
-/**
- * Fixing issue with missed steps in timeseries with optimized data and zoom
- *
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4881_timeseties_points_missing_140423_short
- */
-export const FF_LSDV_4881 = "fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short";
-
 /** Fix "No Label" for Dynamic Labels by switching off missing labels removal */
 export const FF_LSDV_4988 = "fflag_fix_front_lsdv_4988_dynamic_no_label_120523_short";
 
@@ -186,23 +140,11 @@ export const FF_LSDV_4988 = "fflag_fix_front_lsdv_4988_dynamic_no_label_120523_s
 export const FF_LSDV_4930 = "fflag_fix_front_lsdv_4930_selection_tool_fixes_240423_short";
 
 /**
- * Restore "hide all regions" button functionality in the outliner
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short
- */
-export const FF_LSDV_4992 = "fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short";
-
-/**
  * Resetting shared stores on task change to correctly generate dynamic children
  * @see: fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: To enable shared store
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
  */
 export const FF_LSDV_4998 = "fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short";
-
-/**
- * Fix delay on double-click interactions in Image Segmentation
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_5248_double_click_delay_280823_short
- */
-export const FF_DBLCLICK_DELAY = "fflag_fix_front_lsdv_5248_double_click_delay_280823_short";
 
 /**
  * Allow to load Taxonomy from remote API
@@ -225,12 +167,6 @@ export const FF_TAXONOMY_LABELING = "fflag_feat_front_lsdv_5452_taxonomy_labelin
 
 export const FF_TASK_COUNT_FIX = "fflag_fix_all_optic_79_task_count_is_wrong_short";
 
-/** Fix taxonomy items init with DEV-3617 FF on; this allows to correctly preselect items on init */
-export const FF_TAXONOMY_SELECTED = "fflag_fix_front_leap_149_taxonomy_selected_true_short";
-
-/** Skip video to region start when it's selected in the outliner */
-export const FF_LEAP_187 = "fflag_feat_front_leap_187_video_seek_on_select_short";
-
 /** Select annotation only once during store init and trigger the rest from this select */
 export const FF_SIMPLE_INIT = "fflag_fix_front_leap_443_select_annotation_once";
 
@@ -252,6 +188,12 @@ export const FF_REVIEWER_FLOW = "fflag_feat_all_leap_1081_reviewer_flow_updates"
 export const FF_CUSTOM_SCRIPT = "fflag_feat_all_leap_883_custom_script_270524_short";
 
 /**
+ * Self Serve
+ * @link https://app.launchdarkly.com/default/test/features/fflag_feat_front_leap_482_self_serve_short/
+ */
+export const FF_SELF_SERVE = "fflag_feat_front_leap_482_self_serve_short";
+
+/**
  * It adds functionality of bulk annotation
  */
 export const FF_BULK_ANNOTATION = "fflag_feat_all_leap_1181_bulk_annotation_short";
@@ -263,6 +205,8 @@ export const FF_BULK_ANNOTATION = "fflag_feat_all_leap_1181_bulk_annotation_shor
 export const FF_LEAP_1173 = "fflag_feat_front_leap_1173_disable_postpone_skip_short";
 
 export const FF_PER_FIELD_COMMENTS = "fflag_feat_all_leap_1430_per_field_comments_100924_short";
+
+export const FF_IMAGE_MEMORY_USAGE = "fflag_feat_front_optic_1479_improve_image_tag_memory_usage_short";
 
 Object.assign(window, {
   APP_SETTINGS: {

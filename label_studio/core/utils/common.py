@@ -14,7 +14,7 @@ import time
 import traceback as tb
 import uuid
 from collections import defaultdict
-from datetime import datetime
+from copy import deepcopy
 from functools import wraps
 from typing import Any, Callable, Generator, Iterable, Mapping, Optional
 
@@ -41,6 +41,7 @@ from django.db.models.signals import (
     pre_save,
 )
 from django.db.utils import OperationalError
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.module_loading import import_string
 from django_filters.rest_framework import DjangoFilterBackend
@@ -100,6 +101,10 @@ def custom_exception_handler(exc, context):
         'detail': 'Unknown error',  # default value
         'exc_info': None,
     }
+
+    if hasattr(exc, 'display_context'):
+        response_data['display_context'] = deepcopy(exc.display_context)
+
     # try rest framework handler
     response = exception_handler(exc, context)
     if response is not None:
@@ -261,7 +266,7 @@ def datetime_to_timestamp(dt):
 
 
 def timestamp_now():
-    return datetime_to_timestamp(datetime.utcnow())
+    return datetime_to_timestamp(timezone.now())
 
 
 def find_first_one_to_one_related_field_by_prefix(instance, prefix):
@@ -492,6 +497,9 @@ def collect_versions(force=False):
                 sentry_sdk.set_tag('version-' + package, result[package]['version'])
             if 'commit' in result[package]:
                 sentry_sdk.set_tag('commit-' + package, result[package]['commit'])
+
+    # edition type
+    result['edition'] = settings.VERSION_EDITION
 
     settings.VERSIONS = result
     return result
